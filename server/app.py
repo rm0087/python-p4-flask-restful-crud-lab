@@ -37,6 +37,10 @@ class Plants(Resource):
 
         return make_response(new_plant.to_dict(), 201)
 
+    
+
+        
+
 
 api.add_resource(Plants, '/plants')
 
@@ -45,7 +49,30 @@ class PlantByID(Resource):
 
     def get(self, id):
         plant = Plant.query.filter_by(id=id).first().to_dict()
-        return make_response(jsonify(plant), 200)
+        return plant, 200
+    
+    def patch(self,id):
+        data = request.json
+        plant = Plant.query.where(Plant.id == id).first()
+
+        if plant:
+            try:
+                for key in data:
+                    setattr(plant, key, data[key])
+                db.session.add(plant)
+                db.session.commit()
+
+                return plant.to_dict(), 202
+            except:
+                return {'error': 'Invalid data'}, 400
+        else:
+            return{'error': "Dude where's my plant?"}, 404
+        
+    def delete(self,id):
+        plant = Plant.query.where(Plant.id == id).first()
+        db.session.delete(plant)
+        db.session.commit()
+        return {},204
 
 
 api.add_resource(PlantByID, '/plants/<int:id>')
